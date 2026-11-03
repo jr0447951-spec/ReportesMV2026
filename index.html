@@ -46,7 +46,6 @@
 
     <form id="reportForm" onsubmit="descargarWordFormatoExacto(event)">
         
-        <!-- Tabla principal mapeada exactamente a las columnas del Sheet -->
         <table>
             <tr><td style="width: 35%; background: #f2f2f2; font-weight: bold;">SITE ID</td><td><input type="text" id="site_id" required></td></tr>
             <tr><td style="background: #f2f2f2; font-weight: bold;">SITE NAME</td><td><input type="text" id="site_name" required></td></tr>
@@ -65,11 +64,9 @@
             <tr><td style="background: #f2f2f2; font-weight: bold;">EXISTE OTRO OPERADOR CUALES</td><td><input type="text" id="otro_operador"></td></tr>
         </table>
 
-        <!-- Relato de hallazgos -->
         <div class="section-title">RELATO DE HALLAZGOS</div>
         <textarea id="relato" placeholder="Ingrese relato de hallazgos..."></textarea>
 
-        <!-- Material Hurtado -->
         <div class="section-title" style="text-align: center;">MATERIAL HURTADO / SUSTRAÍDO</div>
         <table>
             <thead>
@@ -83,11 +80,9 @@
             </tbody>
         </table>
 
-        <!-- Acciones Provisionales -->
         <div class="section-title">ACCIONES REALIZADAS PROVISIONAL.</div>
         <textarea id="acciones_prov" placeholder="Ingrese acciones realizadas provisionalmente..."></textarea>
 
-        <!-- Material Utilizado Provisional -->
         <div class="section-title" style="background: #e2e8f0;">MATERIAL UTILIZADO PARA REPARACIÓN PROVISIONAL</div>
         <table>
             <thead>
@@ -101,7 +96,6 @@
             </tbody>
         </table>
 
-        <!-- Material Necesario Presupuesto -->
         <div class="section-title" style="background: #e2e8f0;">MATERIAL NECESARIO PARA REPARACIÓN FINAL (PRESUPUESTO)</div>
         <table>
             <thead>
@@ -114,7 +108,6 @@
             </tbody>
         </table>
 
-        <!-- Fotografías Ordenadas -->
         <div class="section-title">FOTOGRAFIA DE HALLAZGO (ORDENADAS)</div>
         <div class="form-group" style="margin-bottom: 15px;">
             <label>Seleccionar Fotografías del Sitio (Puedes seleccionar múltiples fotos a la vez):</label>
@@ -154,7 +147,8 @@
         "COLON": { departamento: "LA LIBERTAD", distrito: "LA LIBERTAD OESTE" },
         "SAN JOSE VILLANUEVA": { departamento: "LA LIBERTAD", distrito: "LA LIBERTAD ESTE" },
         "ZARAGOZA": { departamento: "LA LIBERTAD", distrito: "LA LIBERTAD ESTE" },
-        "QUEZALTEPEQUE": { departamento: "LA LIBERTAD", distrito: "LA LIBERTAD NORTE" }
+        "QUEZALTEPEQUE": { departamento: "LA LIBERTAD", distrito: "LA LIBERTAD NORTE" },
+        "SANTIAGO NONUALCO": { departamento: "LA PAZ", distrito: "LA PAZ OESTE" }
     };
 
     async function cargarDatosSheet() {
@@ -177,7 +171,10 @@
             let currentline = parseCSVLine(lines[i]);
             let obj = {};
             for (let j = 0; j < headers.length; j++) {
-                obj[headers[j]] = currentline[j] ? currentline[j].replace(/^"|"$/g, '').trim() : '';
+                let headerName = headers[j];
+                let val = currentline[j] ? currentline[j].replace(/^"|"$/g, '').trim() : '';
+                obj[headerName] = val;
+                obj[headerName.toUpperCase().replace(/\s+/g, '_')] = val;
             }
             sitiosData.push(obj);
         }
@@ -197,14 +194,22 @@
 
     function buscarSitio() {
         let queryId = document.getElementById('searchSiteId').value.trim();
-        let sitio = sitiosData.find(s => s.SITEID === queryId);
+        
+        let sitio = sitiosData.find(s => {
+            let idVal = s.SITEID || s.SITE_ID || s['SITE ID'] || Object.values(s)[0] || '';
+            return idVal.toString().trim() === queryId;
+        });
         
         if (sitio) {
-            document.getElementById('site_id').value = sitio.SITEID || '';
-            document.getElementById('site_name').value = sitio.NOMBRE_DE_SITIO || '';
-            document.getElementById('tipo_porte').value = sitio.Porte || '';
+            document.getElementById('site_id').value = sitio.SITEID || sitio.SITE_ID || sitio['SITE ID'] || Object.values(sitio)[0] || '';
             
-            let muni = (sitio.Municipio || '').toUpperCase().trim();
+            // Corrección aplicada para leer el nombre del sitio sin importar espacios o guiones
+            let nombreSitio = sitio['NOMBRE DE SITIO'] || sitio['NOMBRE_DE_SITIO'] || sitio.NOMBRE_DE_SITIO || sitio[Object.keys(sitio)[1]] || '';
+            document.getElementById('site_name').value = nombreSitio;
+
+            document.getElementById('tipo_porte').value = sitio.Porte || sitio.PORTE || sitio.TIPO_DE_PORTE || '';
+            
+            let muni = (sitio.Municipio || sitio.MUNICIPIO || '').toUpperCase().trim();
             document.getElementById('municipio').value = muni;
 
             let geoInfo = elSalvadorGeo[muni];
@@ -212,33 +217,35 @@
                 document.getElementById('departamento').value = geoInfo.departamento;
                 document.getElementById('distrito').value = geoInfo.distrito;
             } else {
-                document.getElementById('departamento').value = sitio.Departamento || '';
-                document.getElementById('distrito').value = sitio.Distrito || '';
+                document.getElementById('departamento').value = sitio.Departamento || sitio.DEPARTAMENTO || '';
+                document.getElementById('distrito').value = sitio.Distrito || sitio.DISTRITO || '';
             }
 
-            document.getElementById('direccion').value = sitio.Dirección || '';
+            document.getElementById('direccion').value = sitio.Dirección || sitio.DIRECCION || '';
 
-            let lat = sitio.LATITUDE || '';
-            let lon = sitio.LONGITUDE || '';
+            let lat = sitio.LATITUDE || sitio.LATITUD || '';
+            let lon = sitio.LONGITUDE || sitio.LONGITUD || '';
             document.getElementById('coordenadas').value = (lat && lon) ? `${lat}, ${lon}` : '';
 
-            let trans = (sitio.Tipo_de_Trans || '').toUpperCase();
-            let soporte = (sitio.Support_Type || '').toUpperCase();
+            let trans = (sitio.Tipo_de_Trans || sitio.TIPO_DE_TRANS || '').toUpperCase();
+            let soporte = (sitio.Support_Type || sitio.SUPPORT_TYPE || '').toUpperCase();
             let estructuraTipo = "TORRE";
             if (trans.includes("MONOPOLO") || soporte.includes("MONOPOLO")) {
                 estructuraTipo = "MONOPOLO";
             } else if (trans.includes("POSTE") || soporte.includes("POSTE")) {
                 estructuraTipo = "POSTE";
+            } else if (trans.includes("AUTOSOPORTADA") || soporte.includes("AUTOSOPORTADA")) {
+                estructuraTipo = "TORRE";
             }
             document.getElementById('estructura').value = estructuraTipo;
 
             let zonaVal = "RURAL";
-            if (soporte.includes("URBANA") || trans.includes("URBANA")) {
+            if (soporte.includes("URBANA") || trans.includes("URBANA") || soporte.includes("URBAN") || trans.includes("URBAN")) {
                 zonaVal = "URBANA";
             }
             document.getElementById('zona').value = zonaVal;
 
-            let porteVal = (sitio.Porte || '').toUpperCase();
+            let porteVal = (sitio.Porte || sitio.PORTE || '').toUpperCase();
             if (porteVal.includes("GRAN") || porteVal.includes("GRANDE")) {
                 document.getElementById('mg_sitio').value = "SI";
             } else {
