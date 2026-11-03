@@ -3,8 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plataforma Reporte Técnico Movistar - Hurto / Sabotaje</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html-docx-js/0.3.1/html_docx.js"></script>
+    <title>Generador de Reporte Técnico Movistar</title>
+    <!-- Librerías para procesar plantillas .docx reales y el módulo de imágenes -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.37.2/docxtemplater.js"></script>
+    <script src="https://unpkg.com/docxtemplater-image-module-free@3.2.0/build/docxtemplater-image-module-free.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pizzip/3.1.4/pizzip.utils.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; color: #000; }
         .container { max-width: 900px; background: #fff; margin: 0 auto; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
@@ -18,17 +22,16 @@
         table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
         th, td { border: 1px solid #000; padding: 6px 8px; font-size: 11pt; text-align: left; vertical-align: middle; }
         th { background-color: #f2f2f2; font-weight: bold; }
-        .section-title { font-weight: bold; font-size: 12pt; background-color: #e2e8f0; padding: 6px; margin: 20px 0 10px 0; border: 1px solid #000; }
+        .section-title { font-weight: bold; font-size: 12pt; background-color: #e2e8f0; padding: 6px; margin: 20px 0 10px 0; border: 1px solid #000; text-align: center; }
         
-        input[type="text"], input[type="date"], select, textarea { width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 3px; box-sizing: border-box; font-size: 11pt; font-family: Arial; }
+        input[type="text"], input[type="date"], textarea { width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 3px; box-sizing: border-box; font-size: 11pt; font-family: Arial; }
         textarea { resize: vertical; height: 70px; }
+        
+        .photo-box { background: #fdfdfd; border: 1px solid #ccc; padding: 15px; margin-bottom: 15px; border-radius: 4px; }
         
         .btn-submit { background: #16a34a; color: white; border: none; padding: 12px 20px; font-size: 16px; font-weight: bold; width: 100%; border-radius: 6px; cursor: pointer; margin-top: 20px; }
         .btn-submit:hover { background: #15803d; }
         #loading { text-align: center; color: #64748b; font-style: italic; margin-bottom: 10px; }
-        .photo-preview { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; margin-top: 10px; }
-        .photo-preview div { border: 1px solid #ccc; padding: 5px; text-align: center; background: #fafafa; border-radius: 4px; }
-        .photo-preview img { width: 100%; height: 130px; object-fit: cover; border-radius: 3px; }
     </style>
 </head>
 <body>
@@ -44,121 +47,104 @@
         <button type="button" onclick="buscarSitio()">Autocompletar con Sheet</button>
     </div>
 
-    <form id="reportForm" autocomplete="off" onsubmit="descargarWordFormatoExacto(event)">
+    <form id="reportForm" autocomplete="off" onsubmit="generarReportePlantilla(event)">
         
+        <!-- Datos Principales -->
         <table>
-            <tr><td style="width: 35%; background: #f2f2f2; font-weight: bold;">SITE ID</td><td><input type="text" id="site_id" required></td></tr>
-            <tr><td style="background: #f2f2f2; font-weight: bold;">SITE NAME</td><td><input type="text" id="site_name" required></td></tr>
-            <tr><td style="background: #f2f2f2; font-weight: bold;">TIPO DE PORTE</td><td><input type="text" id="tipo_porte"></td></tr>
-            <tr><td style="background: #f2f2f2; font-weight: bold;">DEPARTAMENTO</td><td><input type="text" id="departamento"></td></tr>
-            <tr><td style="background: #f2f2f2; font-weight: bold;">MUNICIPIO</td><td><input type="text" id="municipio"></td></tr>
-            <tr><td style="background: #f2f2f2; font-weight: bold;">DISTRITO</td><td><input type="text" id="distrito"></td></tr>
-            <tr><td style="background: #f2f2f2; font-weight: bold;">DIRECCIÓN</td><td><input type="text" id="direccion"></td></tr>
-            <tr><td style="background: #f2f2f2; font-weight: bold;">COORDENADAS</td><td><input type="text" id="coordenadas"></td></tr>
-            <tr><td style="background: #f2f2f2; font-weight: bold;">TIPO DE ESTRUCTURA (POSTE/TORRE/MONOPOLO)</td><td><input type="text" id="estructura"></td></tr>
-            <tr><td style="background: #f2f2f2; font-weight: bold;">ZONA (RURAL / URBANA)</td><td><input type="text" id="zona"></td></tr>
-            <tr><td style="background: #f2f2f2; font-weight: bold;">MG EN SITIO (SI / NO)</td><td><input type="text" id="mg_sitio"></td></tr>
+            <tr><td style="width: 35%; background: #f2f2f2; font-weight: bold;">SITE ID</td><td><input type="text" id="site_id" required autocomplete="off"></td></tr>
+            <tr><td style="background: #f2f2f2; font-weight: bold;">SITE NAME</td><td><input type="text" id="site_name" required autocomplete="off"></td></tr>
+            <tr><td style="background: #f2f2f2; font-weight: bold;">TIPO DE PORTE</td><td><input type="text" id="tipo_porte" autocomplete="off"></td></tr>
+            <tr><td style="background: #f2f2f2; font-weight: bold;">DEPARTAMENTO</td><td><input type="text" id="departamento" autocomplete="off"></td></tr>
+            <tr><td style="background: #f2f2f2; font-weight: bold;">MUNICIPIO</td><td><input type="text" id="municipio" autocomplete="off"></td></tr>
+            <tr><td style="background: #f2f2f2; font-weight: bold;">DISTRITO</td><td><input type="text" id="distrito" autocomplete="off"></td></tr>
+            <tr><td style="background: #f2f2f2; font-weight: bold;">DIRECCIÓN</td><td><input type="text" id="direccion" autocomplete="off"></td></tr>
+            <tr><td style="background: #f2f2f2; font-weight: bold;">COORDENADAS</td><td><input type="text" id="coordenadas" autocomplete="off"></td></tr>
+            <tr><td style="background: #f2f2f2; font-weight: bold;">TIPO DE ESTRUCTURA (POSTE/TORRE/MONOPOLO)</td><td><input type="text" id="estructura" autocomplete="off"></td></tr>
+            <tr><td style="background: #f2f2f2; font-weight: bold;">ZONA (RURAL / URBANA)</td><td><input type="text" id="zona" autocomplete="off"></td></tr>
+            <tr><td style="background: #f2f2f2; font-weight: bold;">MG EN SITIO (SI / NO)</td><td><input type="text" id="mg_sitio" autocomplete="off"></td></tr>
             <tr><td style="background: #f2f2f2; font-weight: bold;">FECHA DE INCIDENTE</td><td><input type="date" id="fecha_incidente"></td></tr>
-            <tr><td style="background: #f2f2f2; font-weight: bold;">ORDEN DE TRABAJO / FOLIO</td><td><input type="text" id="folio"></td></tr>
-            <tr><td style="background: #f2f2f2; font-weight: bold;">FME ASIGNADOS ATENCIÓN DE ALARMA</td><td><input type="text" id="fme_asignados"></td></tr>
-            <tr><td style="background: #f2f2f2; font-weight: bold;">EXISTE OTRO OPERADOR CUALES</td><td><input type="text" id="otro_operador"></td></tr>
+            <tr><td style="background: #f2f2f2; font-weight: bold;">ORDEN DE TRABAJO / FOLIO</td><td><input type="text" id="folio" autocomplete="off"></td></tr>
+            <tr><td style="background: #f2f2f2; font-weight: bold;">FME 1 (TEC_1)</td><td><input type="text" id="tec_1" autocomplete="off" placeholder="Nombre técnico 1"></td></tr>
+            <tr><td style="background: #f2f2f2; font-weight: bold;">FME 2 (TEC_2)</td><td><input type="text" id="tec_2" autocomplete="off" placeholder="Nombre técnico 2"></td></tr>
+            <tr><td style="background: #f2f2f2; font-weight: bold;">EXISTE OTRO OPERADOR CUALES</td><td><input type="text" id="otro_operador" autocomplete="off"></td></tr>
         </table>
 
+        <!-- Relato -->
         <div class="section-title">RELATO DE HALLAZGOS</div>
         <textarea id="relato" placeholder="Ingrese relato de hallazgos..."></textarea>
 
-        <div class="section-title" style="text-align: center;">MATERIAL HURTADO / SUSTRAÍDO</div>
+        <!-- Material Hurtado -->
+        <div class="section-title">MATERIAL HURTADO / SUSTRAÍDO</div>
         <table>
-            <thead>
-                <tr><th>MATERIAL</th><th>CANTIDAD</th><th>OBSERVACIONES</th></tr>
-            </thead>
+            <thead><tr><th>MATERIAL</th><th>CANTIDAD</th><th>OBSERVACIONES</th></tr></thead>
             <tbody id="tablaSustraidos">
                 <tr><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td></tr>
                 <tr><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td></tr>
                 <tr><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td></tr>
-                <tr><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td></tr>
             </tbody>
         </table>
 
+        <!-- Acciones Provisionales -->
         <div class="section-title">ACCIONES REALIZADAS PROVISIONAL.</div>
-        <textarea id="acciones_prov" placeholder="Ingrese acciones realizadas provisionalmente..."></textarea>
+        <textarea id="acciones_prov" placeholder="Ingrese acciones provisionales..."></textarea>
 
-        <div class="section-title" style="background: #e2e8f0;">MATERIAL UTILIZADO PARA REPARACIÓN PROVISIONAL</div>
+        <!-- Material Provisional -->
+        <div class="section-title">MATERIAL UTILIZADO PARA REPARACIÓN PROVISIONAL</div>
         <table>
-            <thead>
-                <tr><th>MATERIAL</th><th>CANTIDAD</th><th>OBSERVACIONES</th></tr>
-            </thead>
+            <thead><tr><th>MATERIAL</th><th>CANTIDAD</th><th>OBSERVACIONES</th></tr></thead>
             <tbody id="tablaProv">
                 <tr><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td></tr>
                 <tr><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td></tr>
-                <tr><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td></tr>
-                <tr><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td></tr>
             </tbody>
         </table>
 
-        <div class="section-title" style="background: #e2e8f0;">MATERIAL NECESARIO PARA REPARACIÓN FINAL (PRESUPUESTO)</div>
+        <!-- Presupuesto / Reparación Final -->
+        <div class="section-title">MATERIAL NECESARIO PARA REPARACIÓN FINAL (PRESUPUESTO)</div>
         <table>
-            <thead>
-                <tr><th>LPU</th><th>Descripción</th><th>Unidad</th><th>Cantidad</th><th>Monto</th><th>Subtotal</th></tr>
-            </thead>
+            <thead><tr><th>LPU</th><th>Descripción</th><th>Unidad</th><th>Cantidad</th><th>Monto</th><th>Subtotal</th></tr></thead>
             <tbody id="tablaPresupuesto">
                 <tr><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td></tr>
                 <tr><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td></tr>
-                <tr><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td></tr>
             </tbody>
         </table>
 
-        <div class="section-title">FOTOGRAFIA DE HALLAZGO (ORDENADAS)</div>
-        <div class="form-group" style="margin-bottom: 15px;">
-            <label>Seleccionar Fotografías del Sitio (Puedes seleccionar múltiples fotos a la vez):</label>
-            <input type="file" id="inputFotos" accept="image/*" multiple onchange="cargarFotos(event)">
-        </div>
-        <div id="previewFotos" class="photo-preview"></div>
+        <!-- Registro Fotográfico (10 Fotos) -->
+        <div class="section-title">REGISTRO FOTOGRÁFICO (10 FOTOS)</div>
+        
+        <script>
+            for(let i=1; i<=10; i++) {
+                document.write(`
+                    <div class="photo-box">
+                        <strong>Fotografía ${i}</strong><br><br>
+                        <input type="file" id="foto_${i}" accept="image/*" style="margin-bottom: 8px;"><br>
+                        <input type="text" id="desc_foto_${i}" placeholder="Descripción de la foto ${i}">
+                    </div>
+                `);
+            }
+        </script>
 
-        <button type="submit" class="btn-submit">Descargar Reporte en Word (.docx) con Formato Exacto</button>
+        <button type="submit" class="btn-submit">Descargar Reporte Word con Plantilla Oficial</button>
     </form>
 </div>
 
 <script>
     let sitiosData = [];
-    let fotosArray = [];
     const sheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTE_5CZtD7qHGW5cWHGAjn7ALTphVm5h88lco9cySYoAe2VBW4fq8DQ7-SZY6cd_FHtNQJS3MpE88hs/pub?output=csv';
 
+    window.addEventListener('pageshow', function(event) {
+        document.getElementById('reportForm').reset();
+    });
+
     const elSalvadorGeo = {
-        "SAN PEDRO PERULAPAN": { departamento: "CUSCATLAN", distrito: "CUSCATLAN NORTE" },
-        "SAN BARTOLOME PERULAPIA": { departamento: "CUSCATLAN", distrito: "CUSCATLAN NORTE" },
+        "SANTIAGO NONUALCO": { departamento: "LA PAZ", distrito: "LA PAZ OESTE" },
+        "SAN PEDRO NONUALCO": { departamento: "LA PAZ", distrito: "LA PAZ OESTE" },
+        "SAN JUAN NONUALCO": { departamento: "LA PAZ", distrito: "LA PAZ OESTE" },
+        "ZACATECOLUCA": { departamento: "LA PAZ", distrito: "LA PAZ CENTRO" },
         "COJUTEPEQUE": { departamento: "CUSCATLAN", distrito: "CUSCATLAN CENTRO" },
-        "SUCHITOTO": { departamento: "CUSCATLAN", distrito: "CUSCATLAN NORTE" },
-        "SAN SALVADOR": { departamento: "SAN SALVADOR", distrito: "SAN SALVADOR CENTRO" },
-        "MEJICANOS": { departamento: "SAN SALVADOR", distrito: "SAN SALVADOR OESTE" },
-        "SOYAPANGO": { departamento: "SAN SALVADOR", distrito: "SAN SALVADOR ESTE" },
-        "ILOPANGO": { departamento: "SAN SALVADOR", distrito: "SAN SALVADOR ESTE" },
-        "CUSATANCINGO": { departamento: "SAN SALVADOR", distrito: "SAN SALVADOR ESTE" },
-        "APOPA": { departamento: "SAN SALVADOR", distrito: "SAN SALVADOR OESTE" },
-        "NEJAPA": { departamento: "SAN SALVADOR", distrito: "SAN SALVADOR OESTE" },
-        "SAN MARCOS": { departamento: "SAN SALVADOR", distrito: "SAN SALVADOR SUR" },
-        "SANTO TOMAS": { departamento: "SAN SALVADOR", distrito: "SAN SALVADOR SUR" },
-        "SANTIAGO TEXACUANGOS": { departamento: "SAN SALVADOR", distrito: "SAN SALVADOR SUR" },
-        "PANCHIMALCO": { departamento: "SAN SALVADOR", distrito: "SAN SALVADOR SUR" },
-        "EL ROSARIO": { departamento: "CUSCATLAN", distrito: "CUSCATLAN SUR" },
-        "ANTIGUO CUSCATLAN": { departamento: "LA LIBERTAD", distrito: "LA LIBERTAD OESTE" },
-        "SANTA TECLA": { departamento: "LA LIBERTAD", distrito: "LA LIBERTAD OESTE" },
-        "LA LIBERTAD": { departamento: "LA LIBERTAD", distrito: "LA LIBERTAD COSTA" },
-        "COLON": { departamento: "LA LIBERTAD", distrito: "LA LIBERTAD OESTE" },
-        "SAN JOSE VILLANUEVA": { departamento: "LA LIBERTAD", distrito: "LA LIBERTAD ESTE" },
-        "ZARAGOZA": { departamento: "LA LIBERTAD", distrito: "LA LIBERTAD ESTE" },
-        "QUEZALTEPEQUE": { departamento: "LA LIBERTAD", distrito: "LA LIBERTAD NORTE" },
-        "SANTIAGO NONUALCO": { departamento: "LA PAZ", distrito: "LA PAZ OESTE" }
+        "SAN PEDRO PERULAPAN": { departamento: "CUSCATLAN", distrito: "CUSCATLAN NORTE" }
     };
 
-    function limpiarAcentos(str) {
-        return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
-    }
-
     async function cargarDatosSheet() {
-        document.getElementById('reportForm').reset();
-        document.getElementById('searchSiteId').value = '';
-
         try {
             const response = await fetch(sheetURL);
             const data = await response.text();
@@ -201,7 +187,6 @@
 
     function buscarSitio() {
         let queryId = document.getElementById('searchSiteId').value.trim();
-        
         let sitio = sitiosData.find(s => {
             let idVal = s.SITEID || s.SITE_ID || s['SITE ID'] || Object.values(s)[0] || '';
             return idVal.toString().trim() === queryId;
@@ -209,24 +194,18 @@
         
         if (sitio) {
             document.getElementById('site_id').value = sitio.SITEID || sitio.SITE_ID || sitio['SITE ID'] || Object.values(sitio)[0] || '';
+            document.getElementById('site_name').value = sitio['NOMBRE DE SITIO'] || sitio['NOMBRE_DE_SITIO'] || '';
+            document.getElementById('tipo_porte').value = sitio.Porte || sitio.PORTE || '';
             
-            let nombreSitio = sitio['NOMBRE DE SITIO'] || sitio['NOMBRE_DE_SITIO'] || sitio.NOMBRE_DE_SITIO || sitio[Object.keys(sitio)[1]] || '';
-            document.getElementById('site_name').value = nombreSitio;
+            let muniSheet = sitio.Municipio || sitio.MUNICIPIO || '';
+            let deptoSheet = sitio.Departamento || sitio.DEPARTAMENTO || '';
+            let distritoSheet = sitio.Distrito || sitio.DISTRITO || '';
 
-            document.getElementById('tipo_porte').value = sitio.Porte || sitio.PORTE || sitio.TIPO_DE_PORTE || '';
+            document.getElementById('municipio').value = muniSheet;
+            let geoInfo = elSalvadorGeo[muniSheet.toUpperCase().trim()];
             
-            let rawMuni = sitio.Municipio || sitio.MUNICIPIO || '';
-            let muniClean = limpiarAcentos(rawMuni);
-            document.getElementById('municipio').value = rawMuni;
-
-            let sheetDept = sitio.Departamento || sitio.DEPARTAMENTO || '';
-            let sheetDist = sitio.Distrito || sitio.DISTRITO || '';
-
-            let geoInfo = elSalvadorGeo[muniClean];
-            
-            document.getElementById('departamento').value = sheetDept ? sheetDept : (geoInfo ? geoInfo.departamento : '');
-            document.getElementById('distrito').value = sheetDist ? sheetDist : (geoInfo ? geoInfo.distrito : '');
-
+            document.getElementById('departamento').value = deptoSheet || (geoInfo ? geoInfo.departamento : '');
+            document.getElementById('distrito').value = distritoSheet || (geoInfo ? geoInfo.distrito : '');
             document.getElementById('direccion').value = sitio.Dirección || sitio.DIRECCION || '';
 
             let lat = sitio.LATITUDE || sitio.LATITUD || '';
@@ -236,27 +215,12 @@
             let trans = (sitio.Tipo_de_Trans || sitio.TIPO_DE_TRANS || '').toUpperCase();
             let soporte = (sitio.Support_Type || sitio.SUPPORT_TYPE || '').toUpperCase();
             let estructuraTipo = "TORRE";
-            if (trans.includes("MONOPOLO") || soporte.includes("MONOPOLO")) {
-                estructuraTipo = "MONOPOLO";
-            } else if (trans.includes("POSTE") || soporte.includes("POSTE")) {
-                estructuraTipo = "POSTE";
-            } else if (trans.includes("AUTOSOPORTADA") || soporte.includes("AUTOSOPORTADA")) {
-                estructuraTipo = "TORRE";
-            }
+            if (trans.includes("MONOPOLO") || soporte.includes("MONOPOLO")) estructuraTipo = "MONOPOLO";
+            else if (trans.includes("POSTE") || soporte.includes("POSTE")) estructuraTipo = "POSTE";
             document.getElementById('estructura').value = estructuraTipo;
 
-            let zonaVal = "RURAL";
-            if (soporte.includes("URBANA") || trans.includes("URBANA") || soporte.includes("URBAN") || trans.includes("URBAN")) {
-                zonaVal = "URBANA";
-            }
-            document.getElementById('zona').value = zonaVal;
-
-            let porteVal = (sitio.Porte || sitio.PORTE || '').toUpperCase();
-            if (porteVal.includes("GRAN") || porteVal.includes("GRANDE")) {
-                document.getElementById('mg_sitio').value = "SI";
-            } else {
-                document.getElementById('mg_sitio').value = "NO";
-            }
+            document.getElementById('zona').value = (soporte.includes("URBANA") || trans.includes("URBANA")) ? "URBANA" : "RURAL";
+            document.getElementById('mg_sitio').value = ((sitio.Porte || '').toUpperCase().includes("GRAN")) ? "SI" : "NO";
 
             alert('¡Sitio autocompletado con éxito desde el Sheet!');
         } else {
@@ -264,165 +228,149 @@
         }
     }
 
-    function cargarFotos(event) {
-        const files = event.target.files;
-        fotosArray = [];
-        const preview = document.getElementById('previewFotos');
-        preview.innerHTML = '';
-
-        for (let i = 0; i < files.length; i++) {
-            let file = files[i];
-            let reader = new FileReader();
-            reader.onload = function(e) {
-                let fotoObj = {
-                    name: file.name,
-                    dataUrl: e.target.result
-                };
-                fotosArray.push(fotoObj);
-                renderizarPreviews();
+    function leerTablaRows(selector) {
+        let rows = [];
+        document.querySelectorAll(selector + ' tr').forEach(tr => {
+            let inputs = tr.querySelectorAll('input');
+            if (inputs.length >= 3 && (inputs[0].value || inputs[1].value)) {
+                rows.push({
+                    material: inputs[0].value,
+                    cantidad: inputs[1].value,
+                    observaciones: inputs[2].value
+                });
+            } else if (inputs.length === 6 && (inputs[0].value || inputs[1].value || inputs[3].value)) {
+                rows.push({
+                    lpu: inputs[0].value,
+                    descripcion: inputs[1].value,
+                    unidad: inputs[2].value,
+                    cantidad: inputs[3].value,
+                    monto: inputs[4].value,
+                    subtotal: inputs[5].value
+                });
             }
-            reader.readAsDataURL(file);
-        }
+        });
+        return rows;
     }
 
-    function renderizarPreviews() {
-        const preview = document.getElementById('previewFotos');
-        preview.innerHTML = '';
-        fotosArray.forEach((foto, index) => {
-            let div = document.createElement('div');
-            div.innerHTML = `
-                <img src="${foto.dataUrl}" />
-                <p style="font-size: 11px; margin: 5px 0;">Foto ${index + 1}<br><b>${foto.name}</b></p>
-                <button type="button" onclick="moverFoto(${index}, -1)" ${index === 0 ? 'disabled' : ''}>⬆️</button>
-                <button type="button" onclick="moverFoto(${index}, 1)" ${index === fotosArray.length - 1 ? 'disabled' : ''}>⬇️</button>
-            `;
-            preview.appendChild(div);
+    function archivoABuffer(fileInputId) {
+        return new Promise((resolve) => {
+            let input = document.getElementById(fileInputId);
+            if (input && input.files && input.files[0]) {
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    resolve(e.target.result);
+                };
+                reader.readAsArrayBuffer(input.files[0]);
+            } else {
+                resolve(null);
+            }
         });
     }
 
-    function moverFoto(index, direccion) {
-        let nuevoIndex = index + direccion;
-        if (nuevoIndex >= 0 && nuevoIndex < fotosArray.length) {
-            let temp = fotosArray[index];
-            fotosArray[index] = fotosArray[nuevoIndex];
-            fotosArray[nuevoIndex] = temp;
-            renderizarPreviews();
-        }
-    }
-
-    function descargarWordFormatoExacto(e) {
+    async function generarReportePlantilla(e) {
         e.preventDefault();
-
+        
         let fechaRaw = document.getElementById('fecha_incidente').value;
         let fechaFormateada = fechaRaw;
+        let fechaNombreTexto = "";
+
         if (fechaRaw) {
             let partes = fechaRaw.split('-');
             if (partes.length === 3) {
                 fechaFormateada = `${partes[2]}/${partes[1]}/${partes[0]}`;
+                const meses = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
+                fechaNombreTexto = `${parseInt(partes[2], 10)} ${meses[parseInt(partes[1], 10) - 1]} ${partes[0]}`;
             }
+        } else {
+            let hoy = new Date();
+            let meses = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
+            fechaNombreTexto = `${hoy.getDate()} ${meses[hoy.getMonth()]} ${hoy.getFullYear()}`;
+            fechaFormateada = `${String(hoy.getDate()).padStart(2, '0')}/${String(hoy.getMonth() + 1).padStart(2, '0')}/${hoy.getFullYear()}`;
         }
 
-        let htmlContent = `
-        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-        <head><meta charset='utf-8'><title>REPORTE TÉCNICO – HURTO / SABOTAJE EN RADIOBASE RED MOVISTAR</title>
-        <style>
-            body { font-family: Arial, sans-serif; font-size: 11pt; color: #000; }
-            h2 { color: #002D62; text-align: center; font-size: 14pt; font-weight: bold; margin-bottom: 20px; }
-            table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-            th, td { border: 1px solid #000; padding: 6px 8px; font-size: 10pt; text-align: left; vertical-align: middle; }
-            th { background-color: #f2f2f2; font-weight: bold; }
-            .label-cell { background-color: #f2f2f2; font-weight: bold; width: 38%; }
-            .section-header { font-weight: bold; font-size: 11pt; background-color: #e2e8f0; border: 1px solid #000; padding: 5px; margin-top: 15px; margin-bottom: 5px; }
-        </style>
-        </head>
-        <body>
-            <h2>REPORTE TÉCNICO – HURTO / SABOTAJE EN RADIOBASE RED MOVISTAR</h2>
+        let imageBuffers = {};
+        for(let i=1; i<=10; i++) {
+            imageBuffers[`foto_${i}`] = await archivoABuffer(`foto_${i}`);
+        }
+
+        PizzipUtils.getBinaryContent("plantilla.docx", async function(error, content) {
+            if (error) {
+                alert("No se encontró el archivo 'plantilla.docx'. Súbelo a la misma carpeta en GitHub junto a index.html.");
+                throw error;
+            }
             
-            <table>
-                <tr><td class="label-cell">SITE ID</td><td>${document.getElementById('site_id').value}</td></tr>
-                <tr><td class="label-cell">SITE NAME</td><td>${document.getElementById('site_name').value}</td></tr>
-                <tr><td class="label-cell">TIPO DE PORTE</td><td>${document.getElementById('tipo_porte').value}</td></tr>
-                <tr><td class="label-cell">DEPARTAMENTO</td><td>${document.getElementById('departamento').value}</td></tr>
-                <tr><td class="label-cell">MUNICIPIO</td><td>${document.getElementById('municipio').value}</td></tr>
-                <tr><td class="label-cell">DISTRITO</td><td>${document.getElementById('distrito').value}</td></tr>
-                <tr><td class="label-cell">DIRECCIÓN</td><td>${document.getElementById('direccion').value}</td></tr>
-                <tr><td class="label-cell">COORDENADAS</td><td>${document.getElementById('coordenadas').value}</td></tr>
-                <tr><td class="label-cell">TIPO DE ESTRUCTURA (POSTE/TORRE/MONOPOLO)</td><td>${document.getElementById('estructura').value}</td></tr>
-                <tr><td class="label-cell">ZONA (RURAL / URBANA)</td><td>${document.getElementById('zona').value}</td></tr>
-                <tr><td class="label-cell">MG EN SITIO (SI / NO)</td><td>${document.getElementById('mg_sitio').value}</td></tr>
-                <tr><td class="label-cell">FECHA DE INCIDENTE</td><td>${fechaFormateada}</td></tr>
-                <tr><td class="label-cell">ORDEN DE TRABAJO / FOLIO</td><td>${document.getElementById('folio').value}</td></tr>
-                <tr><td class="label-cell">FME ASIGNADOS ATENCIÓN DE ALARMA</td><td>${document.getElementById('fme_asignados').value}</td></tr>
-                <tr><td class="label-cell">EXISTE OTRO OPERADOR CUALES</td><td>${document.getElementById('otro_operador').value}</td></tr>
-            </table>
+            let imageOpts = {
+                centered: false,
+                getImage: function(tagValue) {
+                    return tagValue;
+                },
+                getSize: function() {
+                    return [450, 300];
+                }
+            };
 
-            <div class="section-header">RELATO DE HALLAZGOS</div>
-            <p>${document.getElementById('relato').value.replace(/\n/g, '<br>')}</p>
+            let zip = new PizZip(content);
+            let doc = new window.docxtemplater(zip, {
+                paragraphLoop: true,
+                linebreaks: true,
+                modules: [new window.imageModule(imageOpts)]
+            });
 
-            <div class="section-header" style="text-align: center;">MATERIAL HURTADO / SUSTRAÍDO</div>
-            <table>
-                <tr><th>MATERIAL</th><th>CANTIDAD</th><th>OBSERVACIONES</th></tr>`;
+            let sustraidos = leerTablaRows('#tablaSustraidos');
+            let provisional = leerTablaRows('#tablaProv');
+            let presupuesto = leerTablaRows('#tablaPresupuesto');
 
-        let rowsSustraidos = document.querySelectorAll('#tablaSustraidos tr');
-        rowsSustraidos.forEach(row => {
-            let cols = row.querySelectorAll('input');
-            if (cols[0].value || cols[1].value) {
-                htmlContent += `<tr><td>${cols[0].value}</td><td>${cols[1].value}</td><td>${cols[2].value}</td></tr>`;
+            let data = {
+                SITE_ID: document.getElementById('site_id').value,
+                SITE_NAME: document.getElementById('site_name').value,
+                PORTE: document.getElementById('tipo_porte').value,
+                DEPARTAMENTO: document.getElementById('departamento').value,
+                MUNICIPIO: document.getElementById('municipio').value,
+                DISTRITO: document.getElementById('distrito').value,
+                DIRECCION: document.getElementById('direccion').value,
+                COORDENADAS: document.getElementById('coordenadas').value,
+                ESTRUCTURA: document.getElementById('estructura').value,
+                ZONA: document.getElementById('zona').value,
+                MG_SITE: document.getElementById('mg_sitio').value,
+                FECHA_INCIDENTE: fechaFormateada,
+                FOLIO: document.getElementById('folio').value,
+                TEC_1: document.getElementById('tec_1').value,
+                TEC_2: document.getElementById('tec_2').value,
+                OTRO_OPERADOR: document.getElementById('otro_operador').value,
+                RELATO: document.getElementById('relato').value,
+                ACCIONES_PROV: document.getElementById('acciones_prov').value,
+                
+                sustraidos: sustraidos,
+                provisional: provisional,
+                presupuesto: presupuesto
+            };
+
+            for(let i=1; i<=10; i++) {
+                data[`desc_foto${i}`] = document.getElementById(`desc_foto_${i}`).value;
+                data[`foto${i}`] = imageBuffers[`foto_${i}`];
             }
-        });
 
-        htmlContent += `</table>
+            doc.setData(data);
 
-            <div class="section-header">ACCIONES REALIZADAS PROVISIONAL.</div>
-            <p>${document.getElementById('acciones_prov').value.replace(/\n/g, '<br>')}</p>
-
-            <div class="section-header">MATERIAL UTILIZADO PARA REPARACIÓN PROVISIONAL</div>
-            <table>
-                <tr><th>MATERIAL</th><th>CANTIDAD</th><th>OBSERVACIONES</th></tr>`;
-
-        let rowsProv = document.querySelectorAll('#tablaProv tr');
-        rowsProv.forEach(row => {
-            let cols = row.querySelectorAll('input');
-            if (cols[0].value || cols[1].value) {
-                htmlContent += `<tr><td>${cols[0].value}</td><td>${cols[1].value}</td><td>${cols[2].value}</td></tr>`;
+            try {
+                doc.render();
+            } catch (error) {
+                console.error(error);
+                alert("Error al procesar la plantilla o insertar imágenes. Verifica las etiquetas {%=foto1} ... {%=foto10} en tu Word.");
+                return;
             }
+
+            let blob = doc.getZip().generate({
+                type: "blob",
+                mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            });
+            
+            let siteIdVal = document.getElementById('site_id').value || 'SITIO';
+            let siteNameVal = (document.getElementById('site_name').value || '').trim();
+            let nombreArchivo = `REPORTE TÉCNICO MOVISTAR_HURTO - ${siteIdVal} - ${siteNameVal} - ${fechaNombreTexto}.docx`;
+
+            saveAs(blob, nombreArchivo);
         });
-
-        htmlContent += `</table>
-
-            <div class="section-header">MATERIAL NECESARIO PARA REPARACIÓN FINAL (PRESUPUESTO)</div>
-            <table>
-                <tr><th>LPU</th><th>Descripción</th><th>Unidad</th><th>Cantidad</th><th>Monto</th><th>Subtotal</th></tr>`;
-
-        let rowsPresupuesto = document.querySelectorAll('#tablaPresupuesto tr');
-        rowsPresupuesto.forEach(row => {
-            let cols = row.querySelectorAll('input');
-            if (cols[0].value || cols[1].value || cols[3].value) {
-                htmlContent += `<tr><td>${cols[0].value}</td><td>${cols[1].value}</td><td>${cols[2].value}</td><td>${cols[3].value}</td><td>${cols[4].value}</td><td>${cols[5].value}</td></tr>`;
-            } else {
-                htmlContent += `<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>`;
-            }
-        });
-
-        htmlContent += `</table>
-
-            <div class="section-header">FOTOGRAFIA DE HALLAZGO</div>`;
-
-        fotosArray.forEach((foto, index) => {
-            htmlContent += `
-            <div style="margin-bottom: 25px; text-align: center; page-break-inside: avoid;">
-                <p style="font-weight: bold; margin-bottom: 5px;">Fotografía ${index + 1} (${foto.name})</p>
-                <img src="${foto.dataUrl}" style="max-width: 450px; max-height: 350px; border: 1px solid #000;" />
-            </div>`;
-        });
-
-        htmlContent += `</body></html>`;
-
-        let converted = htmlDocx.asBlob(htmlContent);
-        let link = document.createElement('a');
-        link.href = URL.createObjectURL(converted);
-        link.download = `Reporte_Tecnico_${document.getElementById('site_id').value || 'Movistar'}.docx`;
-        link.click();
     }
 
     window.onload = cargarDatosSheet;
