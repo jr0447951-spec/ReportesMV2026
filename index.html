@@ -40,13 +40,13 @@
 
     <div class="search-box">
         <label for="searchSiteId">Buscar SITE ID:</label>
-        <input type="text" id="searchSiteId" placeholder="Ej. 390304" />
+        <input type="text" id="searchSiteId" placeholder="Ej. 390302" />
         <button type="button" onclick="buscarSitio()">Autocompletar con Sheet</button>
     </div>
 
     <form id="reportForm" onsubmit="descargarWordFormatoExacto(event)">
         
-        <!-- Tabla principal de datos del sitio (Exacta al Word original) -->
+        <!-- Tabla principal mapeada exactamente a las columnas del Sheet -->
         <table>
             <tr><td style="width: 35%; background: #f2f2f2; font-weight: bold;">SITE ID</td><td><input type="text" id="site_id" required></td></tr>
             <tr><td style="background: #f2f2f2; font-weight: bold;">SITE NAME</td><td><input type="text" id="site_name" required></td></tr>
@@ -56,20 +56,18 @@
             <tr><td style="background: #f2f2f2; font-weight: bold;">DISTRITO</td><td><input type="text" id="distrito"></td></tr>
             <tr><td style="background: #f2f2f2; font-weight: bold;">DIRECCIÓN</td><td><input type="text" id="direccion"></td></tr>
             <tr><td style="background: #f2f2f2; font-weight: bold;">COORDENADAS</td><td><input type="text" id="coordenadas"></td></tr>
-            <tr><td style="background: #f2f2f2; font-weight: bold;">TIPO DE ESTRUCTURA (POSTE/TORRE/MONOPOLO)</td><td><input type="text" id="estructura" value="TORRE"></td></tr>
-            <tr><td style="background: #f2f2f2; font-weight: bold;">ZONA (RURAL / URBANA)</td><td><input type="text" id="zona" value="RURAL"></td></tr>
-            <tr><td style="background: #f2f2f2; font-weight: bold;">MG EN SITIO (SI / NO)</td><td><input type="text" id="mg_sitio" value="NO"></td></tr>
-            <tr><td style="background: #f2f2f2; font-weight: bold;">FECHA DE INCIDENTE</td><td><input type="text" id="fecha_incidente" value="29/10/2026"></td></tr>
+            <tr><td style="background: #f2f2f2; font-weight: bold;">TIPO DE ESTRUCTURA (POSTE/TORRE/MONOPOLO)</td><td><input type="text" id="estructura"></td></tr>
+            <tr><td style="background: #f2f2f2; font-weight: bold;">ZONA (RURAL / URBANA)</td><td><input type="text" id="zona"></td></tr>
+            <tr><td style="background: #f2f2f2; font-weight: bold;">MG EN SITIO (SI / NO)</td><td><input type="text" id="mg_sitio"></td></tr>
+            <tr><td style="background: #f2f2f2; font-weight: bold;">FECHA DE INCIDENTE</td><td><input type="text" id="fecha_incidente"></td></tr>
             <tr><td style="background: #f2f2f2; font-weight: bold;">ORDEN DE TRABAJO / FOLIO</td><td><input type="text" id="folio"></td></tr>
             <tr><td style="background: #f2f2f2; font-weight: bold;">FME ASIGNADOS ATENCIÓN DE ALARMA</td><td><input type="text" id="fme_asignados"></td></tr>
-            <tr><td style="background: #f2f2f2; font-weight: bold;">EXISTE OTRO OPERADOR CUALES</td><td><input type="text" id="otro_operador" value="NO"></td></tr>
+            <tr><td style="background: #f2f2f2; font-weight: bold;">EXISTE OTRO OPERADOR CUALES</td><td><input type="text" id="otro_operador"></td></tr>
         </table>
 
         <!-- Relato de hallazgos -->
         <div class="section-title">RELATO DE HALLAZGOS</div>
-        <textarea id="relato">Se reporta Hurto de cableado de acometida desde medidor a tablero y de tablero hasta gabinete zte
-9 metros X3 de cable THHN #6
-9 metros X4 de cable THHN #4</textarea>
+        <textarea id="relato" placeholder="Ingrese relato de hallazgos..."></textarea>
 
         <!-- Material Hurtado -->
         <div class="section-title" style="text-align: center;">MATERIAL HURTADO / SUSTRAÍDO</div>
@@ -78,16 +76,16 @@
                 <tr><th>MATERIAL</th><th>CANTIDAD</th><th>OBSERVACIONES</th></tr>
             </thead>
             <tbody id="tablaSustraidos">
-                <tr><td><input type="text" value="THHN # 6"></td><td><input type="text" value="27"></td><td><input type="text" value="MTS"></td></tr>
-                <tr><td><input type="text" value="THHN # 4"></td><td><input type="text" value="36"></td><td><input type="text" value="MTS"></td></tr>
-                <tr><td><input type="text" value=""></td><td><input type="text" value=""></td><td><input type="text" value=""></td></tr>
-                <tr><td><input type="text" value=""></td><td><input type="text" value=""></td><td><input type="text" value=""></td></tr>
+                <tr><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td></tr>
+                <tr><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td></tr>
+                <tr><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td></tr>
+                <tr><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td></tr>
             </tbody>
         </table>
 
         <!-- Acciones Provisionales -->
         <div class="section-title">ACCIONES REALIZADAS PROVISIONAL.</div>
-        <textarea id="acciones_prov">Se realiza reparación provisional con cable WP 6 aluminio desde medidor hasta tablero principal y desde tablero hasta gabinete ZTE se utiliza TSJ 4x8</textarea>
+        <textarea id="acciones_prov" placeholder="Ingrese acciones realizadas provisionalmente..."></textarea>
 
         <!-- Material Utilizado Provisional -->
         <div class="section-title" style="background: #e2e8f0;">MATERIAL UTILIZADO PARA REPARACIÓN PROVISIONAL</div>
@@ -96,10 +94,10 @@
                 <tr><th>MATERIAL</th><th>CANTIDAD</th><th>OBSERVACIONES</th></tr>
             </thead>
             <tbody id="tablaProv">
-                <tr><td><input type="text" value="Wp #6"></td><td><input type="text" value="25"></td><td><input type="text" value="MTS"></td></tr>
-                <tr><td><input type="text" value="TSJ 4X8"></td><td><input type="text" value="9"></td><td><input type="text" value="MTS"></td></tr>
-                <tr><td><input type="text" value="UNIONES"></td><td><input type="text" value="4"></td><td><input type="text" value="C/U"></td></tr>
-                <tr><td><input type="text" value=""></td><td><input type="text" value=""></td><td><input type="text" value=""></td></tr>
+                <tr><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td></tr>
+                <tr><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td></tr>
+                <tr><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td></tr>
+                <tr><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td></tr>
             </tbody>
         </table>
 
@@ -110,9 +108,9 @@
                 <tr><th>LPU</th><th>Descripción</th><th>Unidad</th><th>Cantidad</th><th>Monto</th><th>Subtotal</th></tr>
             </thead>
             <tbody id="tablaPresupuesto">
-                <tr><td><input type="text" value=""></td><td><input type="text" value=""></td><td><input type="text" value=""></td><td><input type="text" value=""></td><td><input type="text" value=""></td><td><input type="text" value=""></td></tr>
-                <tr><td><input type="text" value=""></td><td><input type="text" value=""></td><td><input type="text" value=""></td><td><input type="text" value=""></td><td><input type="text" value=""></td><td><input type="text" value=""></td></tr>
-                <tr><td><input type="text" value=""></td><td><input type="text" value=""></td><td><input type="text" value=""></td><td><input type="text" value=""></td><td><input type="text" value=""></td><td><input type="text" value=""></td></tr>
+                <tr><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td></tr>
+                <tr><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td></tr>
+                <tr><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td></tr>
             </tbody>
         </table>
 
@@ -132,6 +130,32 @@
     let sitiosData = [];
     let fotosArray = [];
     const sheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTE_5CZtD7qHGW5cWHGAjn7ALTphVm5h88lco9cySYoAe2VBW4fq8DQ7-SZY6cd_FHtNQJS3MpE88hs/pub?output=csv';
+
+    const elSalvadorGeo = {
+        "SAN PEDRO PERULAPAN": { departamento: "CUSCATLAN", distrito: "CUSCATLAN NORTE" },
+        "SAN BARTOLOME PERULAPIA": { departamento: "CUSCATLAN", distrito: "CUSCATLAN NORTE" },
+        "COJUTEPEQUE": { departamento: "CUSCATLAN", distrito: "CUSCATLAN CENTRO" },
+        "SUCHITOTO": { departamento: "CUSCATLAN", distrito: "CUSCATLAN NORTE" },
+        "SAN SALVADOR": { departamento: "SAN SALVADOR", distrito: "SAN SALVADOR CENTRO" },
+        "MEJICANOS": { departamento: "SAN SALVADOR", distrito: "SAN SALVADOR OESTE" },
+        "SOYAPANGO": { departamento: "SAN SALVADOR", distrito: "SAN SALVADOR ESTE" },
+        "ILOPANGO": { departamento: "SAN SALVADOR", distrito: "SAN SALVADOR ESTE" },
+        "CUSATANCINGO": { departamento: "SAN SALVADOR", distrito: "SAN SALVADOR ESTE" },
+        "APOPA": { departamento: "SAN SALVADOR", distrito: "SAN SALVADOR OESTE" },
+        "NEJAPA": { departamento: "SAN SALVADOR", distrito: "SAN SALVADOR OESTE" },
+        "SAN MARCOS": { departamento: "SAN SALVADOR", distrito: "SAN SALVADOR SUR" },
+        "SANTO TOMAS": { departamento: "SAN SALVADOR", distrito: "SAN SALVADOR SUR" },
+        "SANTIAGO TEXACUANGOS": { departamento: "SAN SALVADOR", distrito: "SAN SALVADOR SUR" },
+        "PANCHIMALCO": { departamento: "SAN SALVADOR", distrito: "SAN SALVADOR SUR" },
+        "EL ROSARIO": { departamento: "CUSCATLAN", distrito: "CUSCATLAN SUR" },
+        "ANTIGUO CUSCATLAN": { departamento: "LA LIBERTAD", distrito: "LA LIBERTAD OESTE" },
+        "SANTA TECLA": { departamento: "LA LIBERTAD", distrito: "LA LIBERTAD OESTE" },
+        "LA LIBERTAD": { departamento: "LA LIBERTAD", distrito: "LA LIBERTAD COSTA" },
+        "COLON": { departamento: "LA LIBERTAD", distrito: "LA LIBERTAD OESTE" },
+        "SAN JOSE VILLANUEVA": { departamento: "LA LIBERTAD", distrito: "LA LIBERTAD ESTE" },
+        "ZARAGOZA": { departamento: "LA LIBERTAD", distrito: "LA LIBERTAD ESTE" },
+        "QUEZALTEPEQUE": { departamento: "LA LIBERTAD", distrito: "LA LIBERTAD NORTE" }
+    };
 
     async function cargarDatosSheet() {
         try {
@@ -174,18 +198,54 @@
     function buscarSitio() {
         let queryId = document.getElementById('searchSiteId').value.trim();
         let sitio = sitiosData.find(s => s.SITEID === queryId);
+        
         if (sitio) {
             document.getElementById('site_id').value = sitio.SITEID || '';
             document.getElementById('site_name').value = sitio.NOMBRE_DE_SITIO || '';
             document.getElementById('tipo_porte').value = sitio.Porte || '';
-            document.getElementById('departamento').value = sitio.Departamento || '';
-            document.getElementById('municipio').value = sitio.Municipio || '';
-            document.getElementById('distrito').value = sitio.Distrito || '';
+            
+            let muni = (sitio.Municipio || '').toUpperCase().trim();
+            document.getElementById('municipio').value = muni;
+
+            let geoInfo = elSalvadorGeo[muni];
+            if (geoInfo) {
+                document.getElementById('departamento').value = geoInfo.departamento;
+                document.getElementById('distrito').value = geoInfo.distrito;
+            } else {
+                document.getElementById('departamento').value = sitio.Departamento || '';
+                document.getElementById('distrito').value = sitio.Distrito || '';
+            }
+
             document.getElementById('direccion').value = sitio.Dirección || '';
-            document.getElementById('coordenadas').value = (sitio.LATITUDE && sitio.LONGITUDE) ? `${sitio.LATITUDE}, ${sitio.LONGITUDE}` : '';
-            document.getElementById('zona').value = sitio.Support_Type || 'RURAL';
-            document.getElementById('estructura').value = sitio.Tipo_de_Trans || 'TORRE';
-            alert('¡Sitio cargado con éxito desde Google Sheets!');
+
+            let lat = sitio.LATITUDE || '';
+            let lon = sitio.LONGITUDE || '';
+            document.getElementById('coordenadas').value = (lat && lon) ? `${lat}, ${lon}` : '';
+
+            let trans = (sitio.Tipo_de_Trans || '').toUpperCase();
+            let soporte = (sitio.Support_Type || '').toUpperCase();
+            let estructuraTipo = "TORRE";
+            if (trans.includes("MONOPOLO") || soporte.includes("MONOPOLO")) {
+                estructuraTipo = "MONOPOLO";
+            } else if (trans.includes("POSTE") || soporte.includes("POSTE")) {
+                estructuraTipo = "POSTE";
+            }
+            document.getElementById('estructura').value = estructuraTipo;
+
+            let zonaVal = "RURAL";
+            if (soporte.includes("URBANA") || trans.includes("URBANA")) {
+                zonaVal = "URBANA";
+            }
+            document.getElementById('zona').value = zonaVal;
+
+            let porteVal = (sitio.Porte || '').toUpperCase();
+            if (porteVal.includes("GRAN") || porteVal.includes("GRANDE")) {
+                document.getElementById('mg_sitio').value = "SI";
+            } else {
+                document.getElementById('mg_sitio').value = "NO";
+            }
+
+            alert('¡Sitio autocompletado con éxito desde el Sheet!');
         } else {
             alert('No se encontró el SITE ID en la base de datos.');
         }
